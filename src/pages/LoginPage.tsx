@@ -13,6 +13,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
     password: z.string().min(1, 'Password is required'),
+    rememberMe: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -28,15 +29,30 @@ export default function LoginPage() {
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            username: 'emilys',
-            password: 'emilyspass',
+            username: '',
+            password: '',
+            rememberMe: false,
         },
+    });
+
+    // Check for remembered username on mount
+    useState(() => {
+        const savedUsername = localStorage.getItem('rememberedUsername');
+        if (savedUsername) {
+            form.setValue('username', savedUsername);
+            form.setValue('rememberMe', true);
+        }
     });
 
     const onSubmit = async (data: LoginFormValues) => {
         setIsLoading(true);
         setError('');
         try {
+            if (data.rememberMe) {
+                localStorage.setItem('rememberedUsername', data.username);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+            }
             await login(data);
             navigate('/dashboard');
         } catch (err: any) {
@@ -89,6 +105,18 @@ export default function LoginPage() {
                             {form.formState.errors.password && (
                                 <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
                             )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="rememberMe"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                {...form.register('rememberMe')}
+                            />
+                            <Label htmlFor="rememberMe" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                Remember me
+                            </Label>
                         </div>
 
                         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
