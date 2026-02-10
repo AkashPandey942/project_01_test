@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useProducts, useDeleteProduct, useCategories } from '@/hooks/use-products';
 import { Product } from '@/types/product.types';
 import {
@@ -38,8 +38,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, Search, Plus, Filter, ArrowUpDown, Loader2 } from 'lucide-react';
 import { ProductForm } from '@/components/products/ProductForm';
+import { ProductDetailModal } from '@/components/products/ProductDetailModal';
 import { useDebounce } from '@/hooks/use-debounce';
-
 import { useSearchParams } from 'react-router-dom';
 
 export default function ProductsPage() {
@@ -86,6 +86,8 @@ export default function ProductsPage() {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [sortBy, setSortBy] = useState<string>('');
 
     const handleDelete = async () => {
         if (selectedProduct) {
@@ -104,6 +106,25 @@ export default function ProductsPage() {
         setSelectedProduct(null);
         setIsFormOpen(true);
     };
+
+    const handleView = (product: Product) => {
+        setSelectedProduct(product);
+        setIsDetailOpen(true);
+    };
+
+    // Client-side sorting
+    const sortedProducts = React.useMemo(() => {
+        if (!data?.products) return [];
+        const products = [...data.products];
+
+        if (sortBy === 'price-asc') return products.sort((a, b) => a.price - b.price);
+        if (sortBy === 'price-desc') return products.sort((a, b) => b.price - a.price);
+        if (sortBy === 'rating-desc') return products.sort((a, b) => b.rating - a.rating);
+        if (sortBy === 'stock-asc') return products.sort((a, b) => a.stock - b.stock);
+        if (sortBy === 'title-asc') return products.sort((a, b) => a.title.localeCompare(b.title));
+
+        return products;
+    }, [data?.products, sortBy]);
 
     if (error) {
         return <div className="p-4 text-red-500">Error loading products.</div>;
@@ -147,6 +168,20 @@ export default function ProductsPage() {
                         ))}
                     </SelectContent>
                 </Select>
+
+                <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">No sorting</SelectItem>
+                        <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                        <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                        <SelectItem value="rating-desc">Rating: High to Low</SelectItem>
+                        <SelectItem value="stock-asc">Stock: Low to High</SelectItem>
+                        <SelectItem value="title-asc">Title: A to Z</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="rounded-md border bg-white dark:bg-slate-950">
@@ -176,7 +211,7 @@ export default function ProductsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            data?.products.map((product: Product) => (
+                            sortedProducts.map((product: Product) => (
                                 <TableRow key={product.id}>
                                     <TableCell>
                                         <Avatar className="h-10 w-10 rounded-lg">
@@ -220,6 +255,9 @@ export default function ProductsPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleView(product)}>
+                                                    View Details
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleEdit(product)}>
                                                     Edit
                                                 </DropdownMenuItem>
@@ -242,7 +280,7 @@ export default function ProductsPage() {
                     </TableBody>
                 </Table>
 
-                {/* Simple Pagination */}
+                {/* Pagination */}
                 <div className="flex items-center justify-end space-x-2 p-4">
                     <Button
                         variant="outline"
@@ -304,6 +342,13 @@ export default function ProductsPage() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Product Detail Modal */}
+            <ProductDetailModal
+                product={selectedProduct}
+                open={isDetailOpen}
+                onOpenChange={setIsDetailOpen}
+            />
         </div>
     );
 }
