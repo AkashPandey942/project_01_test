@@ -2,13 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services/product.service';
 import { toast } from 'sonner';
 
-export const useProducts = (page = 1, limit = 10, search = '') => {
+export const useProducts = (page = 1, limit = 10, search = '', category = 'all') => {
   return useQuery({
-    queryKey: ['products', page, limit, search],
+    queryKey: ['products', page, limit, search, category],
     queryFn: () => {
         const skip = (page - 1) * limit;
         if (search) {
             return productService.search(search);
+        }
+        if (category && category !== 'all') {
+            return productService.getByCategory(category);
         }
         return productService.getAll(limit, skip);
     },

@@ -40,13 +40,46 @@ import { MoreHorizontal, Search, Plus, Filter, ArrowUpDown, Loader2 } from 'luci
 import { ProductForm } from '@/components/products/ProductForm';
 import { useDebounce } from '@/hooks/use-debounce';
 
+import { useSearchParams } from 'react-router-dom';
+
 export default function ProductsPage() {
-    const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [search, setSearch] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Get values from URL or defaults
+    const page = Number(searchParams.get('page')) || 1;
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || 'all';
+
+    const limit = 10;
     const debouncedSearch = useDebounce(search, 500);
 
-    const { data, isLoading, error } = useProducts(page, limit, debouncedSearch);
+    // Update URL helpers
+    const setPage = (newPage: number) => {
+        setSearchParams(prev => {
+            prev.set('page', String(newPage));
+            return prev;
+        });
+    };
+
+    const handleSearch = (value: string) => {
+        setSearchParams(prev => {
+            if (value) prev.set('search', value);
+            else prev.delete('search');
+            prev.set('page', '1'); // Reset page on search
+            return prev;
+        });
+    };
+
+    const handleCategoryChange = (value: string) => {
+        setSearchParams(prev => {
+            if (value && value !== 'all') prev.set('category', value);
+            else prev.delete('category');
+            prev.set('page', '1');
+            return prev;
+        });
+    };
+
+    const { data, isLoading, error } = useProducts(page, limit, debouncedSearch, category);
     const { data: categories } = useCategories();
     const deleteProduct = useDeleteProduct();
 
@@ -96,12 +129,24 @@ export default function ProductsPage() {
                     <Input
                         placeholder="Search products..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearch(e.target.value)}
                         className="pl-8"
                     />
                 </div>
 
-                {/* Category Filter could go here */}
+                <Select value={category} onValueChange={handleCategoryChange}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories?.map((cat: any) => (
+                            <SelectItem key={cat.slug || cat} value={cat.slug || cat}>
+                                {cat.name || cat}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="rounded-md border bg-white dark:bg-slate-950">
@@ -202,7 +247,7 @@ export default function ProductsPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        onClick={() => setPage(page - 1)}
                         disabled={page === 1 || isLoading}
                     >
                         Previous
@@ -211,7 +256,7 @@ export default function ProductsPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage((p) => p + 1)}
+                        onClick={() => setPage(page + 1)}
                         disabled={isLoading || (data?.total && page * limit >= data.total)}
                     >
                         Next
