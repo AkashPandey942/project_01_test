@@ -15,6 +15,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { ImageUpload } from '@/components/common/ImageUpload';
+import { MultiImageUpload } from '@/components/common/MultiImageUpload';
 import { useCategories, useCreateProduct, useUpdateProduct } from '@/hooks/use-products';
 import { Product } from '@/types/product.types';
 
@@ -26,6 +27,7 @@ const productSchema = z.object({
     brand: z.string().min(1, 'Brand is required'),
     category: z.string().min(1, 'Category is required'),
     thumbnail: z.string().url('Thumbnail is required'),
+    images: z.array(z.string().url()).optional(),
     discountPercentage: z.coerce.number().min(0).max(100).optional(),
 });
 
@@ -51,6 +53,7 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
             brand: '',
             category: '',
             thumbnail: '',
+            images: [],
             discountPercentage: 0,
         },
     });
@@ -202,6 +205,24 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
                                         <Textarea placeholder="Product description" className="resize-none" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="images"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Additional Images (Optional)</FormLabel>
+                                    <FormControl>
+                                        <MultiImageUpload
+                                            value={field.value || []}
+                                            onChange={field.onChange}
+                                            maxImages={5}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
