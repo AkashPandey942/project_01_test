@@ -194,7 +194,7 @@ export default function ProductsPage() {
                             <TableHead>Price</TableHead>
                             <TableHead>Stock</TableHead>
                             <TableHead>Rating</TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
+                            <TableHead className="w-[50px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -281,24 +281,31 @@ export default function ProductsPage() {
                 </Table>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-end space-x-2 p-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 1 || isLoading}
-                    >
-                        Previous
-                    </Button>
-                    <span className="text-sm font-medium">Page {page}</span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(page + 1)}
-                        disabled={isLoading || (data?.total && page * limit >= data.total)}
-                    >
-                        Next
-                    </Button>
+                <div className="flex items-center justify-between p-4">
+                    <div className="text-sm text-muted-foreground">
+                        Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, data?.total || 0)} of {data?.total || 0} products
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(page - 1)}
+                            disabled={page === 1 || isLoading}
+                        >
+                            Previous
+                        </Button>
+                        <span className="text-sm font-medium">
+                            Page {page} of {Math.ceil((data?.total || 0) / limit)}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage(page + 1)}
+                            disabled={isLoading || (data?.total && page * limit >= data.total)}
+                        >
+                            Next
+                        </Button>
+                    </div>
                 </div>
             </div>
 
