@@ -21,8 +21,21 @@ import { cn } from '@/lib/utils'; // Ensure utils helper is imported
 export default function Layout() {
     const { isAuthenticated, user, logout } = useAuthStore();
     const location = useLocation();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    // Sidebar state persistence
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        const saved = localStorage.getItem('sidebarOpen');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
+
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Save sidebar state effects
+    const handleSidebarToggle = () => {
+        const newState = !sidebarOpen;
+        setSidebarOpen(newState);
+        localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+    };
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
@@ -46,7 +59,7 @@ export default function Layout() {
             >
                 <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
                     {sidebarOpen && <span className="font-bold text-xl text-primary">Aptech</span>}
-                    <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                    <Button variant="ghost" size="icon" onClick={handleSidebarToggle}>
                         {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </Button>
                 </div>
@@ -92,9 +105,13 @@ export default function Layout() {
                         <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             <Menu />
                         </Button>
-                        <h1 className="text-lg font-semibold capitalize hidden sm:block">
-                            {location.pathname.substring(1)}
-                        </h1>
+                        <div className="hidden sm:flex flex-col">
+                            <h1 className="text-lg font-semibold capitalize">
+                                {location.pathname === '/' || location.pathname === '/dashboard' ? 'Dashboard'
+                                    : location.pathname.split('/').filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' / ')}
+                            </h1>
+                            <span className="text-xs text-muted-foreground">Admin Panel</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4">
