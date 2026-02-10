@@ -1,9 +1,12 @@
 import React from 'react';
 import { useDashboardStats } from '@/hooks/use-dashboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Package, Users, AlertTriangle, TrendingUp, Star, LayoutGrid, Loader2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart } from 'recharts';
+import { Package, Users, AlertTriangle, TrendingUp, Star, LayoutGrid, Loader2, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -33,6 +36,21 @@ export default function DashboardPage() {
             else ranges['500+']++;
         });
         return Object.entries(ranges).map(([name, value]) => ({ name, value }));
+    }, [stats]);
+
+    const topRatedData = React.useMemo(() => {
+        if (!stats?.products) return [];
+        return [...stats.products]
+            .sort((a: any, b: any) => b.rating - a.rating)
+            .slice(0, 10)
+            .map((p: any) => ({ name: p.title.length > 20 ? p.title.substring(0, 20) + '...' : p.title, rating: p.rating }));
+    }, [stats]);
+
+    const recentProducts = React.useMemo(() => {
+        if (!stats?.products) return [];
+        // Assuming the API returns products in some order, we'll just take the first 5 as "recent" for this demo
+        // In a real app, we'd sort by created_at if available
+        return stats.products.slice(0, 5);
     }, [stats]);
 
     if (isLoading) {
@@ -108,6 +126,84 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Top Rated Products Chart */}
+            <div className="grid gap-4 md:grid-cols-1">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top 10 Rated Products</CardTitle>
+                        <CardDescription>Highest rated products in your catalog</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={topRatedData} layout="vertical" margin={{ left: 50 }}>
+                                <XAxis type="number" domain={[0, 5]} hide />
+                                <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12 }} />
+                                <Tooltip />
+                                <Bar dataKey="rating" fill="#facc15" radius={[0, 4, 4, 0]} barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Recent Products Table */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Recent Products</CardTitle>
+                        <CardDescription>Latest products added to the store.</CardDescription>
+                    </div>
+                    <Button asChild size="sm" variant="outline">
+                        <Link to="/products" className="flex items-center gap-1">
+                            View All <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[80px]">Image</TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead>Rating</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {recentProducts.map((product: any) => (
+                                <TableRow key={product.id}>
+                                    <TableCell>
+                                        <div className="h-10 w-10 rounded-md bg-muted overflow-hidden">
+                                            <img
+                                                src={product.thumbnail}
+                                                alt={product.title}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{product.title}</TableCell>
+                                    <TableCell className="capitalize">{product.category}</TableCell>
+                                    <TableCell>${product.price}</TableCell>
+                                    <TableCell>
+                                        <span className={product.stock < 10 ? "text-red-500 font-bold" : ""}>
+                                            {product.stock}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center">
+                                            <span>{product.rating}</span>
+                                            <Star className="h-3 w-3 fill-yellow-500 text-yellow-500 ml-1" />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </div>
     );
 }
