@@ -12,10 +12,19 @@ import {
     Search,
     Bell,
     Sun,
-    Moon
+    Moon,
+    User as UserIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils'; // Ensure utils helper is imported
 
 export default function Layout() {
@@ -35,6 +44,15 @@ export default function Layout() {
         const newState = !sidebarOpen;
         setSidebarOpen(newState);
         localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+    };
+
+    const toggleTheme = () => {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
     };
 
     if (!isAuthenticated) {
@@ -124,12 +142,47 @@ export default function Layout() {
                             <Bell size={20} />
                         </Button>
 
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-slate-200 overflow-hidden">
-                                <img src={user?.image} alt={user?.username} className="h-full w-full object-cover" />
-                            </div>
-                            <span className="text-sm font-medium hidden md:block">{user?.firstName} {user?.lastName}</span>
-                        </div>
+                        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                            <span className="sr-only">Toggle theme</span>
+                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                                    <div className="h-8 w-8 rounded-full bg-slate-200 overflow-hidden">
+                                        <img src={user?.image} alt={user?.username} className="h-full w-full object-cover" />
+                                    </div>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="end" forceMount>
+                                <DropdownMenuLabel className="font-normal">
+                                    <div className="flex flex-col space-y-1">
+                                        <p className="text-sm font-medium leading-none">{user?.firstName} {user?.lastName}</p>
+                                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                                    </div>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link to="/settings" className="cursor-pointer">
+                                        <UserIcon className="mr-2 h-4 w-4" />
+                                        <span>Profile</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link to="/settings" className="cursor-pointer">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        <span>Settings</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Log out</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </header>
 
