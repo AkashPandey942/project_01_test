@@ -3,23 +3,12 @@ import { useDashboardStats } from '@/hooks/use-dashboard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Package, Users, AlertTriangle, TrendingUp, Star, LayoutGrid, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function DashboardPage() {
     const { data: stats, isLoading, error } = useDashboardStats();
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return <div className="text-red-500">Failed to load dashboard data.</div>;
-    }
 
     // Process data for charts
     const categoryData = React.useMemo(() => {
@@ -45,6 +34,18 @@ export default function DashboardPage() {
         });
         return Object.entries(ranges).map(([name, value]) => ({ name, value }));
     }, [stats]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-red-500">Failed to load dashboard data.</div>;
+    }
 
 
     return (
