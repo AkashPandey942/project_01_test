@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/use-auth-store';
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
     LayoutDashboard,
     Package,
     Users,
@@ -12,6 +18,7 @@ import {
     Moon,
     User as UserIcon,
     LogOut,
+    Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -37,6 +44,7 @@ export default function Layout() {
     });
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Save sidebar state effects
     const handleSidebarToggle = () => {
@@ -85,19 +93,30 @@ export default function Layout() {
                     {navItems.map((item) => {
                         const isActive = location.pathname.startsWith(item.href);
                         return (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={cn(
-                                    "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors",
-                                    isActive
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                )}
-                            >
-                                <item.icon size={20} />
-                                {sidebarOpen && <span>{item.label}</span>}
-                            </Link>
+                            <TooltipProvider key={item.href} delayDuration={0}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            to={item.href}
+                                            className={cn(
+                                                "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors",
+                                                isActive
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800",
+                                                !sidebarOpen && "justify-center px-2"
+                                            )}
+                                        >
+                                            <item.icon size={20} />
+                                            {sidebarOpen && <span>{item.label}</span>}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {!sidebarOpen && (
+                                        <TooltipContent side="right">
+                                            <p>{item.label}</p>
+                                        </TooltipContent>
+                                    )}
+                                </Tooltip>
+                            </TooltipProvider>
                         );
                     })}
                 </nav>
@@ -109,16 +128,21 @@ export default function Layout() {
                             "w-full flex items-center gap-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20",
                             !sidebarOpen && "px-2 justify-center"
                         )}
-                        onClick={() => {
+                        onClick={async () => {
+                            setIsLoggingOut(true);
                             toast.success("Logged out successfully", {
-                                duration: 5000,
+                                duration: 2000,
                                 position: 'bottom-right',
                             });
+                            // Small delay to let the user see the toast/loader
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                             logout();
+                            setIsLoggingOut(false);
                         }}
+                        disabled={isLoggingOut}
                     >
-                        <LogOut size={20} />
-                        {sidebarOpen && <span>Logout</span>}
+                        {isLoggingOut ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+                        {sidebarOpen && <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
                     </Button>
                 </div>
             </aside>

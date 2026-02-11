@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
@@ -35,14 +36,7 @@ export default function LoginPage() {
         },
     });
 
-    // Check for remembered username on mount
-    useEffect(() => {
-        const savedUsername = localStorage.getItem('rememberedUsername');
-        if (savedUsername) {
-            form.setValue('username', savedUsername);
-            form.setValue('rememberMe', true);
-        }
-    }, [form]);
+
 
     const onSubmit = async (data: LoginFormValues) => {
         setIsLoading(true);
@@ -54,6 +48,7 @@ export default function LoginPage() {
                 localStorage.removeItem('rememberedUsername');
             }
             await login(data);
+            toast.success("Logged in successfully");
             navigate('/dashboard');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Invalid credentials');
@@ -70,12 +65,17 @@ export default function LoginPage() {
                     <CardDescription>Enter your credentials to access your account</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
+                        {/* Hidden inputs to trick browser autofill */}
+                        <input type="text" style={{ display: 'none' }} />
+                        <input type="password" style={{ display: 'none' }} />
+
                         <div className="space-y-2">
                             <Label htmlFor="username">Username</Label>
                             <Input
                                 id="username"
                                 placeholder="Enter username"
+                                autoComplete="new-password"
                                 {...form.register('username')}
                                 disabled={isLoading}
                             />
@@ -91,6 +91,7 @@ export default function LoginPage() {
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="Enter password"
+                                    autoComplete="new-password"
                                     {...form.register('password')}
                                     disabled={isLoading}
                                 />
@@ -133,9 +134,7 @@ export default function LoginPage() {
                         </Button>
                     </form>
                 </CardContent>
-                <CardFooter className="flex justify-center text-sm text-muted-foreground">
-                    <p>Use 'emilys' / 'emilyspass' to test</p>
-                </CardFooter>
+
             </Card>
         </div>
     );
