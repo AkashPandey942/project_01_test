@@ -25,7 +25,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import {
     Select,
@@ -36,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Search, Plus, Filter, ArrowUpDown, Loader2 } from 'lucide-react';
+import { MoreHorizontal, Search, Plus, Loader2 } from 'lucide-react';
 import { ProductForm } from '@/components/products/ProductForm';
 import { ProductDetailModal } from '@/components/products/ProductDetailModal';
 import { useDebounce } from '@/hooks/use-debounce';

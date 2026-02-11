@@ -6,17 +6,15 @@ import {
     Package,
     Users,
     Settings,
-    LogOut,
     Menu,
     X,
-    Search,
-    Bell,
     Sun,
     Moon,
     User as UserIcon,
+    LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -104,14 +102,7 @@ export default function Layout() {
                 </nav>
 
                 <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                    <Button
-                        variant="ghost"
-                        className={cn("w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50", !sidebarOpen && "justify-center")}
-                        onClick={logout}
-                    >
-                        <LogOut size={20} />
-                        {sidebarOpen && <span className="ml-3">Logout</span>}
-                    </Button>
+
                 </div>
             </aside>
 
@@ -133,14 +124,6 @@ export default function Layout() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="relative hidden md:block w-64">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-                            <Input placeholder="Search global..." className="pl-9" />
-                        </div>
-
-                        <Button variant="ghost" size="icon">
-                            <Bell size={20} />
-                        </Button>
 
                         <Button variant="ghost" size="icon" onClick={toggleTheme}>
                             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

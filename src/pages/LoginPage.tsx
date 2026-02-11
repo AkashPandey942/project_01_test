@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -36,13 +36,13 @@ export default function LoginPage() {
     });
 
     // Check for remembered username on mount
-    useState(() => {
+    useEffect(() => {
         const savedUsername = localStorage.getItem('rememberedUsername');
         if (savedUsername) {
             form.setValue('username', savedUsername);
             form.setValue('rememberMe', true);
         }
-    });
+    }, [form]);
 
     const onSubmit = async (data: LoginFormValues) => {
         setIsLoading(true);

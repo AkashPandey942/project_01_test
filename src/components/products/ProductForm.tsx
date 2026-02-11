@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -161,7 +160,16 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
                                     <FormItem>
                                         <FormLabel>Price ($)</FormLabel>
                                         <FormControl>
-                                            <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} value={field.value} />
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                {...field}
+                                                onChange={e => {
+                                                    const value = parseFloat(e.target.value);
+                                                    field.onChange(isNaN(value) ? 0 : value);
+                                                }}
+                                                value={field.value ?? ''}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -175,7 +183,15 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
                                     <FormItem>
                                         <FormLabel>Stock</FormLabel>
                                         <FormControl>
-                                            <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} value={field.value} />
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={e => {
+                                                    const value = parseInt(e.target.value);
+                                                    field.onChange(isNaN(value) ? 0 : value);
+                                                }}
+                                                value={field.value ?? ''}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -189,7 +205,16 @@ export function ProductForm({ initialData, onSuccess }: ProductFormProps) {
                                     <FormItem>
                                         <FormLabel>Discount (%)</FormLabel>
                                         <FormControl>
-                                            <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} value={field.value} />
+                                            <Input
+                                                type="number"
+                                                step="0.1"
+                                                {...field}
+                                                onChange={e => {
+                                                    const value = parseFloat(e.target.value);
+                                                    field.onChange(isNaN(value) ? 0 : value);
+                                                }}
+                                                value={field.value ?? ''}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
